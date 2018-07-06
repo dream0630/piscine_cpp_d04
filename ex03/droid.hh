@@ -1,40 +1,46 @@
-#ifndef DROID_HPP
-#define DROID_HPP
+#ifndef DROID_H
+#define DROID_H
 
-#include <string>
-#include <iostream>
-#include "droidmemory.hh"
+#include    <string>
+#include    "droidmemory.hh"
 
-class Droid {
-public:
-	Droid(std::string id);
-	Droid(Droid const &other);
-	~Droid();
-	Droid &operator=(Droid const &other);
-	std::string const &getId() const;
-	size_t getEnergy() const;
-	size_t getAttack() const;
-	size_t getToughness() const;
-	std::string const *getStatus() const;
-	void setId(std::string next);
-	void setEnergy(size_t next);
-	void setStatus(std::string *next);
-	bool operator==(Droid const &other) const;
-	bool operator!=(Droid const &other) const;
-	Droid	&operator<<(size_t &energy);
-	DroidMemory const *getBattleData() const;
-	DroidMemory *getBattleData();
-	void setBattleData(DroidMemory *mem);
-	bool operator()(const std::string *task, size_t exp);
+class Droid
+{
 private:
-	std::string	Id;
-	size_t		Energy;
-	const size_t	Attack;
-	const size_t	Toughness;
-	std::string	*Status;
-	DroidMemory	*BattleData;
+
+    std::string     Id;
+    size_t          Energy;
+    size_t const    Attack;
+    size_t const    Toughness;
+    std::string     *Status;
+    DroidMemory     *BattleData;
+
+public:
+
+    Droid(std::string ID);
+    Droid(Droid const & otherDroid);
+    ~Droid();
+
+    std::string     getId() const;
+    size_t          getEnergy() const;
+    size_t          getAttack() const;
+    size_t          getToughness() const;
+    std::string      *getStatus() const;
+    DroidMemory     *getBattleData() const;
+
+    void            setId(std::string const & ID);
+    void            setEnergy(size_t const & energy);
+    void            setStatus(std::string *status);
+    void            setBattleData(DroidMemory *Memory);
+
+    Droid &operator=(Droid const & Droid);
+    bool operator!=(Droid const & Droid) const;
+    bool operator==(Droid const & otherDroid) const;
+    Droid & operator<<(size_t & EnergyStock);
+    bool operator()(std::string const *task, size_t reqExp);
 };
 
-std::ostream &operator<<(std::ostream &stream, Droid const &droid);
+std::ostream& operator<<(std::ostream &out, Droid const & Droid);
+
 
 #endif

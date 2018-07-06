@@ -1,161 +1,162 @@
-#include <iostream>
-#include <string>
+#include    <cstdlib>
 #include "carrier.hh"
 
-Carrier::Carrier(std::string id)
-	: Id(id),
-	  Energy(300),
-	  Attack(100),
-	  Toughness(90)
+Carrier::Carrier(std::string Id) : Id(""), Energy(300), Attack(100), Toughness(90), Droids()
 {
-	for (int i = 0; i < 5; ++i) {
-		Droids[i] = nullptr;
-	}
+    this->Id = Id;
+    this->Speed = 0;
 }
 
 Carrier::~Carrier()
 {
-	for (int i = 0; i < 5; ++i) {
-		if (Droids[i])
-			delete Droids[i];
-	}
+    for (size_t i = 0 ; i < 5 ; i++) {
+        if (this->Droids[i]) {
+            delete this->Droids[i];
+        }
+    }
 }
 
-Carrier	&Carrier::operator~()
+std::string Carrier::getId() const
 {
-	int j = 0;
-
-	for (int i = 0; i < 5; ++i) {
-		if (Droids[i])
-			++j;
-	}
-	if (j == 0)
-		Speed = 0;
-	else
-		Speed = 100 - (10 * j);
-	return *this;
+    return this->Id;
 }
 
-std::string const	&Carrier::getId() const
+size_t Carrier::getEnergy() const
 {
-	return Id;
+    return this->Energy;
 }
 
-void	Carrier::setId(std::string const &val)
+size_t Carrier::getSpeed() const
 {
-	Id = val;
+    return this->Speed;
 }
 
-size_t	Carrier::getEnergy() const
+void        Carrier::setId(std::string Id)
 {
-	return Energy;
+    this->Id = Id;
 }
 
-void	Carrier::setEnergy(size_t val)
+void        Carrier::setEnergy(size_t energy)
 {
-	if (val > 600)
-		val = 600;
-	Energy = val;
+    this->Energy = energy;
 }
 
-size_t	Carrier::getAttack() const
+void        Carrier::setSpeed(size_t speed)
 {
-	return Attack;
+    this->Speed = speed;
 }
 
-size_t	Carrier::getToughness() const
+size_t      Carrier::getNbDroids() const
 {
-	return Toughness;
+    size_t      nbDroids = 0;
+
+    for (size_t i = 0 ; i < 5 ; i++) {
+        if (this->Droids[i]) {
+            nbDroids += 1;
+        }
+    }
+    return nbDroids;
 }
 
-size_t	Carrier::getSpeed() const
+void        Carrier::displayCarrier() const
 {
-	return Speed;
+    std::cout << "Carrier '" << this->Id << "' Droid(s) on-board:" << std::endl;
+    for (size_t i = 0 ; i < 5 ; i++) {
+        std::cout << "[" << i << "] : ";
+        if (this->Droids[i]) {
+            std::cout << *this->Droids[i] << std::endl;
+        }
+        else {
+            std::cout << "Free" << std::endl;
+        }
+    }
+    std::cout << "Speed : " << this->getSpeed() << ", Energy " << this->getEnergy();
 }
 
-void	Carrier::setSpeed(size_t val)
+Carrier & Carrier::operator<<(Droid *& BoardingDroid)
 {
-	Speed = val;
+    for (size_t i = 0 ; i < 5 ; i++) {
+        if (this->Droids[i] == NULL) {
+            this->Droids[i] = BoardingDroid;
+            BoardingDroid = NULL;
+            this->Speed = 100 - (this->getNbDroids() * 10);
+            break;
+        }
+    }
+    return *this;
 }
 
-Carrier	&Carrier::operator<<(Droid *&droid)
+Carrier & Carrier::operator<<(size_t & EnergyStock)
 {
-	for (int i = 0; i < 5; ++i) {
-		if (!Droids[i]) {
-			Droids[i] = droid;
-			droid = NULL;
-			~(*this);
-			return *this;
-		}
-	}
-	return *this;
+    size_t      delta = 600 - this->Energy;
+
+    if (EnergyStock < delta) {
+        delta = EnergyStock;
+    }
+    this->Energy += delta;
+    EnergyStock -= delta;
+    return *this;
 }
 
-Carrier	&Carrier::operator>>(Droid*& droid)
+Carrier & Carrier::operator>>(Droid *& BoardingDroid)
 {
-	for (int i = 0; i < 5; ++i) {
-		if (Droids[i]) {
-			droid = Droids[i];
-			Droids[i] = nullptr;
-			~(*this);
-			return *this;
-		}
-	}
-	droid = nullptr;
-	return *this;
+    for (size_t i = 0 ; i < 5 ; i++) {
+        if (this->Droids[i] != NULL) {
+            BoardingDroid = this->Droids[i];
+            this->Droids[i] = NULL;
+            this->Speed += 10;
+            if (this->getNbDroids() == 0) {
+                this->Speed = 0;
+            }
+            break;
+        }
+    }
+    return *this;
 }
 
-Droid const	*&Carrier::operator[](unsigned int const index)
+Droid *& Carrier::operator[](size_t const & index)
 {
-	return (Droid const *&)Droids[index];
+    return this->Droids[index];
 }
 
-Droid const	*Carrier::operator[](unsigned int const index) const
+Droid * const & Carrier::operator[](size_t const & index) const
 {
-	return Droids[index];
+    return this->Droids[index];
 }
 
-bool Carrier::operator()(int x, int y)
+Carrier & Carrier::operator~()
 {
-	int j = 0;
-
-	if (x < 0)
-		x = -x;
-	if (y < 0)
-		y = -y;
-	for (int i = 0; i < 5; ++i) {
-		if (Droids[i])
-			++j;
-	}
-	if (j == 0 || (unsigned int)((x + y) * (10 + j)) > Energy)
-		return false;
-	Energy -= (unsigned int)((x + y) * (10 + j));
-	return true;
+    if (this->getNbDroids() == 0) {
+        this->Speed = 0;
+    }
+    else {
+        this->Speed = 100 - (10 * this->getNbDroids());
+;    }
+    return *this;
 }
 
-std::ostream	&operator<<(std::ostream &stream, Carrier const &carrier)
+bool        Carrier::operator()(int const & posX, int const & posY)
 {
-	stream << "Carrier '" << carrier.getId() << "' Droid(s) on-board:" << std::endl;
-	for (int i = 0; i < 5; ++i) {
-		stream << "[" << i << "] : ";
-		if (carrier[i])
-			stream << *carrier[i] << std::endl;
-		else
-			stream << "Free" << std::endl;
-	}
-	stream << "Speed : " << carrier.getSpeed()
-	       << ", Energy " << carrier.getEnergy();
-	return stream;
+    size_t      nbDroids = 0;
+    size_t         energyCost;
+
+    for (size_t i = 0 ; i < 5 ; i++) {
+        if (this->Droids[i]) {
+            nbDroids += 1;
+        }
+    }
+
+    energyCost = (abs(posX) + abs(posY)) * (10 + nbDroids);
+
+    if (this->Speed == 0 || this->Energy < energyCost) {
+        return false;
+    }
+    this->setEnergy(this->getEnergy() - energyCost);
+    return true;
 }
 
-Carrier& operator<<(Carrier& carrier, size_t& value)
+std::ostream& operator<<(std::ostream &out, Carrier const & Carrier)
 {
-	if (carrier.getEnergy() + value > 600) {
-		value -= 600 - carrier.getEnergy();
-		carrier.setEnergy(600);
-	} else {
-		carrier.setEnergy(carrier.getEnergy() + value);
-		value = 0;
-	}
-	return carrier;
+    Carrier.displayCarrier();
+    return out;
 }
